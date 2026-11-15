@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<!-- Types stay in the Jakar.Extensions namespace, as every package split out of Jakar.Extensions does (MigrationPlan.md). -->
+		<RootNamespace>Jakar.Extensions</RootNamespace>
+		<AssemblyName>Jakar.Users</AssemblyName>
+		<Version>10.1.0</Version>
+		<Title>Jakar.Users</Title>
+		<PackageId>Jakar.Users</PackageId>
+		<Authors>Tyler Stegmaier</Authors>
+		<Description>User, group, role and address models (Guid- and long-keyed), login requests, claims, permissions and JWT parsing.</Description>
+		<PackageTags>users roles groups claims permissions jwt login</PackageTags>
+		<PackageReleaseNotes>10.1.0: initial release. Split out of Jakar.Extensions 10.12.0; the types keep the Jakar.Extensions namespace.</PackageReleaseNotes>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/Jakar510/Jakar.Users</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Jakar510/Jakar.Users</PackageProjectUrl>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591;IDE0079;CS8424;IDE0046;CS1658</NoWarn>
+		<WarningsAsErrors>Nullable;CS0114;CS9113;IL2026;IL2046;IL2057;IL2067;IL2070;IL2072;IL2075;IL2087;IL2091;IL2111;IL3050;IL3051</WarningsAsErrors>
+		<IsAotCompatible>true</IsAotCompatible>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<!-- Jakar.Json's attributes are [Conditional]: keep them in this assembly's metadata, so [JsonModel] types in other assemblies see them on the members they inherit. -->
+		<DefineConstants>$(DefineConstants);JAKAR_JSON_KEEP_ATTRIBUTES</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Jakar.Extensions" />		<PackageReference Include="JetBrains.Annotations" /> 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" /> 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Jakar.Users.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\images\icon.png" Pack="true" PackagePath="\" Visible="false" />
+		<None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+</Project>

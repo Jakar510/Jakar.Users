@@ -1,0 +1,99 @@
+﻿// Jakar.Extensions :: Jakar.Users.Tests
+// 10/02/2026
+
+// Release gate for AOT-plan decision 2 ("11.0 must read JSON written by 10.x"):
+//   Golden/v10/*.json was written by Jakar.Extensions 10.x (Newtonsoft) from GoldenSamples (see the generator note in GoldenSamples.cs).
+//   - Read:  11.0 deserializes each file, re-serializes it, and must get the same JSON back.
+//   - Write: 11.0 serializes the same deterministic samples and must produce the same JSON 10.x did.
+// Known, intended differences are listed per file with the reason; anything else fails.
+
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Jakar.Extensions.UserGuid;
+
+
+namespace Jakar.Extensions.Tests;
+
+
+[TestFixture]
+public sealed class GoldenFile_Tests
+{
+    private static readonly string __directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "Golden", "v10");
+
+
+    /// <summary> File name → (read with 11.0, write with 11.0). </summary>
+    private static readonly Dictionary<string, Func<string, string>> __readers = new()
+                                                                                 {
+                                                                                     ["LoginRequest"]        = static json => LoginRequest.FromJson(json).ToJson(),
+                                                                                     ["LoginRequestVersion"] = static json => LoginRequestVersion.FromJson(json).ToJson(),
+                                                                                     ["UserAddress"]         = static json => UserAddress.FromJson(json).ToJson(),
+                                                                                     ["GroupModel"]          = static json => GroupModel.FromJson(json).ToJson(),
+                                                                                     ["RoleModel"]           = static json => RoleModel.FromJson(json).ToJson(),
+                                                                                     ["UserModel"]           = static json => UserModel.FromJson(json).ToJson()
+                                                                                 };
+
+
+    /// <summary> Property names (at any depth) that may differ, with the reason. Keep this list short and justified. </summary>
+    private static readonly Dictionary<string, string> __knownDifferences = new()
+                                                                            {
+                                                                                // Computed, read-only values Newtonsoft wrote and nothing reads back. Pair / StringTags write only the data (ReadOnlyMembers = Ignore).
+                                                                                ["HasValue"] = "Pair.HasValue: computed from Value",
+                                                                                ["IsEmpty"]  = "StringTags.IsEmpty: computed from Tags/Entries"
+                                                                            };
+
+
+    /// <summary> Properties where JSON null and [] mean the same thing (both read back as empty). A default StringTags wrote null for its arrays in 10.x and [] in 11.0. </summary>
+    private static readonly HashSet<string> __nullEqualsEmpty = ["Tags", "Entries"];
+
+
+    public static IEnumerable<string> Files() => __readers.Keys;
+
+
+    [TestCaseSource(nameof(Files))] public void Reads10xJson( string name )
+    {
+        string legacy = File.ReadAllText(Path.Combine(__directory, $"{name}.json"));
+        string again  = __readers[name](legacy);
+        AssertSameJson(name, legacy, again);
+    }
+
+
+    [TestCaseSource(nameof(Files))] public void WritesThe10xShape( string name )
+    {
+        string legacy  = File.ReadAllText(Path.Combine(__directory, $"{name}.json"));
+        string current = GoldenSamples.All().Single(x => x.Name == name).Json;
+        AssertSameJson(name, legacy, current);
+    }
+
+
+    private static void AssertSameJson( string name, string expected, string actual )
+    {
+        JNode? left  = Strip(JNode.Parse(expected));
+        JNode? right = Strip(JNode.Parse(actual));
+
+        Assert.That(JNode.DeepEquals(left, right), Is.True, $"{name}: JSON differs.\n--- 10.x ---\n{left?.ToJson()}\n--- 11.0 ---\n{right?.ToJson()}");
+    }
+
+
+    private static JNode? Strip( JNode? node )
+    {
+        switch ( node )
+        {
+            case JObjectNode obj:
+                foreach ( string key in obj.Keys.Where(__knownDifferences.ContainsKey).ToArray() ) { obj.Remove(key); }
+
+                foreach ( string key in obj.Where(static pair => pair.Value is null && __nullEqualsEmpty.Contains(pair.Key)).Select(static pair => pair.Key).ToArray() ) { obj[key] = new JArrayNode(); }
+
+                foreach ( KeyValuePair<string, JNode?> pair in obj.ToArray() ) { Strip(pair.Value); }
+
+                break;
+
+            case JArrayNode array:
+                foreach ( JNode? item in array ) { Strip(item); }
+
+                break;
+        }
+
+        return node;
+    }
+}

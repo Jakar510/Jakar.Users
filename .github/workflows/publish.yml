@@ -1,0 +1,75 @@
+﻿name: Publish
+
+# Every push to master runs CI, packs Jakar.Users and pushes it to nuget.org. A version that's already there is skipped,
+# so a release is a commit that bumps <Version> in Jakar.Users/Jakar.Users.csproj (<.NET major>.<library major>.<library minor>).
+#
+# nuget.org Trusted Publishing (no stored API key): the repository needs
+#   - a Trusted Publishing policy on nuget.org: owner Jakar510, repository Jakar.Users, workflow file publish.yml, environment production
+#     (the publish job runs in the GitHub environment "production", which GitHub creates on first use);
+#   - NUGET_USER: the nuget.org profile name (not the email address), as a repository variable or a secret.
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Pack and push to nuget.org
+    needs: ci
+    runs-on: ubuntu-latest
+    # Must match the environment in the nuget.org Trusted Publishing policy: the OIDC token carries it, and the policy rejects any other.
+    environment: production
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC token for nuget.org Trusted Publishing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pack
+        run: dotnet pack Jakar.Users/Jakar.Users.csproj -c Release -o artifacts
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/*
+
+      # The nuget.org profile name isn't a secret: a repository variable (Settings → Secrets and variables → Actions → Variables) or a secret both work.
+      - name: Check the nuget.org user is configured
+        shell: bash
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
+        run: |
+          if [ -z "$NUGET_USER" ]; then
+            echo "::error title=NUGET_USER is not set::Add a repository variable (or secret) named NUGET_USER holding your nuget.org profile name (not your email), then re-run this workflow."
+            exit 1
+          fi
+
+      - name: NuGet login (OIDC → short-lived API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
+
+      # Pushes the .snupkg next to each .nupkg too.
+      - name: Push
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
