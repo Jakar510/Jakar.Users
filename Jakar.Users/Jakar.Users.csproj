@@ -32,7 +32,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jakar.Extensions" />		<PackageReference Include="JetBrains.Annotations" /> 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" /> 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="Jakar.Extensions" />
+		<PackageReference Include="Jakar.Files" />
+		<PackageReference Include="JetBrains.Annotations" />
+		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
 	</ItemGroup>
 
 	<ItemGroup>
