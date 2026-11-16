@@ -44,6 +44,12 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      # nuget.config lists a local feed that only exists on the dev machine; CI restores from nuget.org.
+      - name: Use nuget.org only
+        shell: bash
+        run: |
+          if [ -f nuget.config ] && grep -q 'key="LocalNuGet"' nuget.config; then dotnet nuget remove source LocalNuGet --configfile nuget.config; fi
+
       - name: Pack
         run: dotnet pack Jakar.Users/Jakar.Users.csproj -c Release -o artifacts
 
