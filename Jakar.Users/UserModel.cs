@@ -217,7 +217,7 @@ public abstract class UserModel<TSelf, TID, TAddress, TGroupModel, TRoleModel> :
     }
     public TSelf With( JObjectNode? data )
     {
-        AdditionalData = Json.Merge(AdditionalData, data);
+        AdditionalData = UsersHelpers.Merge(AdditionalData, data);
         return (TSelf)this;
     }
 

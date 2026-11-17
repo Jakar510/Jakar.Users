@@ -7,13 +7,13 @@
 		<!-- Types stay in the Jakar.Extensions namespace, as every package split out of Jakar.Extensions does (MigrationPlan.md). -->
 		<RootNamespace>Jakar.Extensions</RootNamespace>
 		<AssemblyName>Jakar.Users</AssemblyName>
-		<Version>10.1.0</Version>
+		<Version>10.2.0</Version>
 		<Title>Jakar.Users</Title>
 		<PackageId>Jakar.Users</PackageId>
 		<Authors>Tyler Stegmaier</Authors>
 		<Description>User, group, role and address models (Guid- and long-keyed), login requests, claims, permissions and JWT parsing.</Description>
 		<PackageTags>users roles groups claims permissions jwt login</PackageTags>
-		<PackageReleaseNotes>10.1.0: initial release. Split out of Jakar.Extensions 10.12.0; the types keep the Jakar.Extensions namespace.</PackageReleaseNotes>
+		<PackageReleaseNotes>10.2.0: BREAKING: no longer depends on Jakar.Extensions (Jakar.Files, Jakar.Core, Jakar.Logging, Jakar.Collections instead). Gains PasswordValidator, PasswordRequirements, Regexes, UnitConverters, Email, IUserName, IValidator, IAppName, ICurrentLocation/AltitudeReference/DistanceUnit and SupportedLanguage. IWebAppSettings moved to Jakar.Extensions; JwtParser.GetOrCreateParser/CreateAsync take (IConfiguration, appName, version, authenticationType) (Jakar.Extensions adds the IWebAppSettings overloads). 10.1.0: initial release. Split out of Jakar.Extensions 10.12.0; the types keep the Jakar.Extensions namespace.</PackageReleaseNotes>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -32,9 +32,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jakar.Extensions" />
+		<PackageReference Include="CommunityToolkit.Diagnostics" />
+		<PackageReference Include="Jakar.Collections" />
+		<PackageReference Include="Jakar.Core" />
 		<PackageReference Include="Jakar.Files" />
+		<PackageReference Include="Jakar.Logging" />
+		<PackageReference Include="OneOf" />
+		<PackageReference Include="ZLinq" />
 		<PackageReference Include="JetBrains.Annotations" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
 	</ItemGroup>

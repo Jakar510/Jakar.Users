@@ -1,4 +1,4 @@
-// Jakar.Extensions :: Jakar.Database
+﻿// Jakar.Extensions :: Jakar.Database
 // 4/4/2024  10:1
 
 
@@ -343,11 +343,11 @@ public sealed partial class UserModel : UserModel<UserModel, Guid, UserAddress, 
     {
         UserModel user = Create(model);
 
-        await user.Addresses.Add(addresses, token).ConfigureAwait(false);
+        await user.Addresses.AddAsync(addresses, token).ConfigureAwait(false);
 
-        await user.Groups.Add(groups, token).ConfigureAwait(false);
+        await user.Groups.AddAsync(groups, token).ConfigureAwait(false);
 
-        await user.Roles.Add(roles, token).ConfigureAwait(false);
+        await user.Roles.AddAsync(roles, token).ConfigureAwait(false);
 
         return user;
     }
@@ -379,11 +379,11 @@ public sealed partial class CreateUserModel : CreateUserModel<CreateUserModel, G
     {
         CreateUserModel user = Create(model);
 
-        await user.Addresses.Add(addresses, token).ConfigureAwait(false);
+        await user.Addresses.AddAsync(addresses, token).ConfigureAwait(false);
 
-        await user.Groups.Add(groups, token).ConfigureAwait(false);
+        await user.Groups.AddAsync(groups, token).ConfigureAwait(false);
 
-        await user.Roles.Add(roles, token).ConfigureAwait(false);
+        await user.Roles.AddAsync(roles, token).ConfigureAwait(false);
 
         return user;
     }

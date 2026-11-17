@@ -18,23 +18,26 @@ public sealed class JwtParser( SigningCredentials credentials, TokenValidationPa
     private readonly        JsonWebTokenHandler                     __handler = new();
 
 
-    public static async ValueTask<JwtParser> GetOrCreateParser<TApp>( IWebAppSettings settings, string authenticationType )
+    /// <remarks> Jakar.Extensions adds an overload taking an <c> IWebAppSettings </c>. </remarks>
+    public static async ValueTask<JwtParser> GetOrCreateParser<TApp>( IConfiguration configuration, string appName, AppVersion version, string authenticationType )
         where TApp : IAppName
     {
-        if ( !__parsers.TryGetValue(authenticationType, out JwtParser? parser) ) { __parsers[authenticationType] = parser = await CreateAsync<TApp>(settings, authenticationType).ConfigureAwait(false); }
+        if ( !__parsers.TryGetValue(authenticationType, out JwtParser? parser) ) { __parsers[authenticationType] = parser = await CreateAsync<TApp>(configuration, appName, version, authenticationType).ConfigureAwait(false); }
 
         return parser;
     }
 
 
-    public static async ValueTask<JwtParser> CreateAsync<TApp>( IWebAppSettings settings, string authenticationType )
+    /// <remarks> Jakar.Extensions adds an overload taking an <c> IWebAppSettings </c>. </remarks>
+    public static async ValueTask<JwtParser> CreateAsync<TApp>( IConfiguration configuration, string appName, AppVersion version, string authenticationType )
         where TApp : IAppName
     {
-        SigningCredentials credentials = await settings.Configuration.GetSigningCredentials().ConfigureAwait(false);
+        SigningCredentials credentials = await configuration.GetSigningCredentials().ConfigureAwait(false);
 
-        TokenValidationParameters parameters = await settings.GetTokenValidationParameters(authenticationType).ConfigureAwait(false);
+        SymmetricSecurityKey      key        = await configuration.GetSymmetricSecurityKey(JWT, JWT_KEY).ConfigureAwait(false);
+        TokenValidationParameters parameters = await configuration.GetTokenValidationParameters(authenticationType, key).ConfigureAwait(false);
 
-        return new JwtParser(credentials, parameters, settings.AppName, TApp.AppName, settings.Version);
+        return new JwtParser(credentials, parameters, appName, TApp.AppName, version);
     }
 
 
@@ -104,15 +107,6 @@ public sealed class JwtParser( SigningCredentials credentials, TokenValidationPa
 
 public static class JwtParserExtensions
 {
-    public static async ValueTask<TokenValidationParameters> GetTokenValidationParameters( this IWebAppSettings settings, string authenticationType, string? audience = null, string? issuer = null, string jwt = JWT, string fileKey = JWT_KEY, TimeSpan? clockSkew = null )
-    {
-        IConfiguration configuration = settings.Configuration;
-
-        SymmetricSecurityKey key = await configuration.GetSymmetricSecurityKey(jwt, fileKey).ConfigureAwait(false);
-
-        return await configuration.GetTokenValidationParameters(authenticationType, key, audience, issuer, clockSkew).ConfigureAwait(false);
-    }
-
     public static async ValueTask<TokenValidationParameters> GetTokenValidationParameters( this IConfiguration configuration, string authenticationType, SymmetricSecurityKey? key = null, string? audience = null, string? issuer = null, TimeSpan? clockSkew = null )
     {
         key ??= await configuration.GetSymmetricSecurityKey().ConfigureAwait(false);

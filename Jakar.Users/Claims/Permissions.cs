@@ -108,7 +108,7 @@ public readonly struct Permissions<TEnum> : IDisposable
     [MustDisposeResource] public static Permissions<TEnum> Create( UserRights? rights, params ReadOnlySpan<char> span )
     {
         Permissions<TEnum> permissions = new(rights);
-        if ( span.IsNullOrWhiteSpace() ) { return permissions; }
+        if ( span.IsWhiteSpace() ) { return permissions; }
 
         for ( int i = 0; i < span.Length && i < Count; i++ )
         {

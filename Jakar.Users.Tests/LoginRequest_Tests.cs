@@ -31,11 +31,12 @@ public class LoginRequest_Tests : Assert
 
     [Test] public void LoginRequestValue_CarriesAnyJson()
     {
-        LoginRequestValue request = new("tyler", "hunter2", "{\"Token\":\"abc\",\"Ttl\":30}".FromJson());
+        LoginRequestValue request = new("tyler", "hunter2", JNode.Parse("{\"Token\":\"abc\",\"Ttl\":30}"));
         LoginRequestValue back    = LoginRequestValue.FromJson(request.ToJson());
 
         Assert.That(back.UserPassword,                             Is.EqualTo("hunter2"));
-        Assert.That(back.Data.TryGetValue("Token", out string? token), Is.True);
+        string? token = (string?)( (JObjectNode)back.Data! )["Token"];
+        Assert.That(token,                                         Is.Not.Null);
         Assert.That(token,                                         Is.EqualTo("abc"));
         Assert.That(new LoginRequestValue().ToJson(),              Does.Contain("\"Data\" : null"));
     }

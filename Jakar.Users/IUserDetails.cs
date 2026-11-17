@@ -143,13 +143,13 @@ public interface IUserDetails
     public static string GetDescription( IUserDetails data ) => GetDescription(data.Department, data.Title, data.Company);
     public static string GetDescription( scoped in ReadOnlySpan<char> department, scoped in ReadOnlySpan<char> title, scoped in ReadOnlySpan<char> company )
     {
-        if ( department.IsNullOrWhiteSpace() && title.IsNullOrWhiteSpace() && company.IsNullOrWhiteSpace() ) { return EMPTY; }
+        if ( department.IsWhiteSpace() && title.IsWhiteSpace() && company.IsWhiteSpace() ) { return EMPTY; }
 
-        return department.IsNullOrWhiteSpace() switch
+        return department.IsWhiteSpace() switch
                {
-                   false when !title.IsNullOrWhiteSpace() && company.IsNullOrWhiteSpace()  => $"{department}, {title}",
-                   false when title.IsNullOrWhiteSpace()  && !company.IsNullOrWhiteSpace() => $"{department} at {company}",
-                   false when !title.IsNullOrWhiteSpace() && !company.IsNullOrWhiteSpace() => $"{title} at {company}",
+                   false when !title.IsWhiteSpace() && company.IsWhiteSpace()  => $"{department}, {title}",
+                   false when title.IsWhiteSpace()  && !company.IsWhiteSpace() => $"{department} at {company}",
+                   false when !title.IsWhiteSpace() && !company.IsWhiteSpace() => $"{title} at {company}",
                    _                                                                       => $"{department}, {title} at {company}"
                };
     }

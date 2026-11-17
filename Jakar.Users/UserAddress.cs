@@ -86,7 +86,7 @@ public abstract class UserAddress<TSelf, TID> : BaseClass<TSelf>, IAddress<TID>
                 if ( !char.IsLetterOrDigit(span[i]) || char.IsPunctuation(span[i]) ) { span[i] = ' '; }
             }
 
-            return span.IsNullOrWhiteSpace();
+            return span.IsWhiteSpace();
         }
     }
 
